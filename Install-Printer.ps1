@@ -17,9 +17,10 @@ function printermain {
             Start-BitsTransfer -Source $url -Destination $dlpath
         }
         #Extract printer driver
-        If (OR(($zpath -eq ""), ($zpath -eq"<UnZip Output Path> (Optional)")))
+        If (($zpath -eq "") -or ($zpath -eq"<UnZip Output Path> (Optional)"))
         {
-            Expand-Archive -Path $dlpath -DestinationPath $dlpath
+            $zpath = $dlpath -replace '\\\w+\.\w+'
+            Expand-Archive -Path $dlpath -DestinationPath $zpath
         }
         Else
         {
@@ -38,7 +39,7 @@ function printermain {
     {
     Write-Output "Printer Driver is already installed, Continuing..."
     }
-    If (OR(($PrinterName -eq ""),($PrinterName -eq "<Printer Dispaly Name (Optional)>")))
+    If (($PrinterName -eq "") -or ($PrinterName -eq "<Printer Dispaly Name (Optional)>"))
     {
         $PrinterName = $driver
     }
