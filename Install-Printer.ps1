@@ -11,23 +11,18 @@
 
 #Main Function (Starts download, starts extraction, calls driver installation, calls printer installation)
 function printermain {
-    Try {                 
-        If (-not (Test-Path $dlpath)) {
+    Try 
+    {                 
+        If (-not (Test-Path $dlpath)) 
+        {
             #Download printer driver (if it hasn't been already)
             Start-BitsTransfer -Source $url -Destination $dlpath
         }
         #Extract printer driver
-        If (($zpath -eq "") -or ($zpath -eq"<UnZip Output Path> (Optional)"))
-        {
-            $zpath = $dlpath -replace '\\\w+\.\w+'
-            Expand-Archive -Path $dlpath -DestinationPath $zpath
-        }
-        Else
-        {
-            Expand-Archive -Path $dlpath -DestinationPath $zpath
-        }
+        Expand-Archive -Path $dlpath -DestinationPath $zpath
     }
-    Catch {
+    Catch 
+    {
             Write-Output "Error Downloading and Extracting " $driver " Package: " $_
     }
     $DriverTest = Get-PrinterDriver -Name $driver
@@ -38,10 +33,6 @@ function printermain {
     Else
     {
     Write-Output "Printer Driver is already installed, Continuing..."
-    }
-    If (($PrinterName -eq "") -or ($PrinterName -eq "<Printer Dispaly Name (Optional)>"))
-    {
-        $PrinterName = $driver
     }
     $PrinterTest = Get-Printer -Name $PrinterName
     if (-not ($PrinterTest.Name = $PrinterName)) {
@@ -77,6 +68,14 @@ function installprinter {
 }
 
 #Call main then delete extracted printer files.
+If (($zpath -eq "") -or ($zpath -eq"<UnZip Output Path> (Optional)"))
+{
+    $zpath = $dlpath -replace '\\\w+\.\w+'
+}
+If (($PrinterName -eq "") -or ($PrinterName -eq "<Printer Dispaly Name (Optional)>"))
+{
+    $PrinterName = $driver
+}
 printermain
 If (Test-Path $zpath) {
     Remove-Item $zpath -Recurse
