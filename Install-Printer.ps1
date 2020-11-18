@@ -6,7 +6,7 @@
     $driverpath = $zpath + "<Internal Path of extracted driver inf>"
     $printIP = "<Printer IP Address>"
     $PrinterName = "<Printer Dispaly Name (Optional)>"
-    $ErrorActionPreference = 'ContinueSilently'
+    $ErrorActionPreference = 'SilentlyContinue'
 
 
 #Main Function (Starts download, starts extraction, calls driver installation, calls printer installation)
