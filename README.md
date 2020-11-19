@@ -7,8 +7,6 @@ $url: Set this to the URL for downloading the Driver. Needs to point to the actu
 
 $dlpath: Sets the download file location for your drivers (Required)
 
-$zpath: Sets the directory to unzip the driver to. Will use same as $dlpath if set blank. (Optional)
-
 $driver: This needs to be set to the DriverStore Name of the Driver. (Required)
 
 $driverpath: This needs the pathing to the driver INF file. It appends your zip path automatically. (Required)
@@ -27,8 +25,6 @@ EXAMPLE PARAMETERS:
 $url = "https://cscsupportftp.mykonicaminolta.com/DownloadFile/Download.ashx?fileversionid=31329&productid=2175"
 
 $dlpath = "C:\Drivers"
-
-$zpath = ""
 
 $driver = "KONICA MINOLTA C360i PCL Mono"
 
