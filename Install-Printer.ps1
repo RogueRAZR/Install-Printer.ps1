@@ -26,6 +26,7 @@
  
 .RELEASENOTES
 Version 1.0: Original published version.
+Version 1.1: Modified the Driver Check so that if Driver is already present, there is no need to download.
 
 #>
 
