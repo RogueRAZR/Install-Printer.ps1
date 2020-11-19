@@ -36,7 +36,7 @@ function printermain {
     Write-Output "Printer Driver is already installed, Continuing..."
     }
     $PrinterTest = Get-Printer -Name $PrinterName
-    if (-not ($PrinterTest.Name = $PrinterName)) {
+    if (-not ($PrinterTest.Name -eq $PrinterName)) {
         installprinter
     }
     Else
