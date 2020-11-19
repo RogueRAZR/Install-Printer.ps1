@@ -34,6 +34,6 @@ $printIP = "192.168.0.5"
 
 $PrinterName = ""
 
-$ErrorActionPreference = 'ContinueSilently'
+$ErrorActionPreference = 'SilentlyContinue'
 
 This example with install drivers for a Konica Minolta bizhub C360i. Then it will install the printer with port 192.168.0.5 and the name of the printer will be "KONICA MINOLTA C360i PCL Mono"
