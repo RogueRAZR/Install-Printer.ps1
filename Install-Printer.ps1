@@ -80,31 +80,28 @@ param
 
 #Main Function (Starts download, starts extraction, calls driver installation, calls printer installation)
     function printermain {
+        $DriverTest = Get-PrinterDriver -Name $Driver    
         Try 
-        {                 
-            If (-not (Test-Path $DlPath)) 
+        {   
+            If ((-not (Test-Path $DlPath)) -and (-not ($DriverTest.Name.Contains($Driver))))
             {
                 #Create Directory
                 New-Item -Path $ZPath -ItemType Directory
                 #Download printer driver (if it hasn't been already)
                 Start-BitsTransfer -Source $url -Destination $DlPath
+                #Extract printer driver
+                Expand-Archive -Path $DlPath -DestinationPath $ZPath
+                #Begin driver installation
+                installdrivers
             }
-            #Extract printer driver
-            Expand-Archive -Path $DlPath -DestinationPath $ZPath
+            Else
+            {
+                Write-Output "Printer Driver is already installed, Continuing..."
+            }
         }
         Catch 
         {
-                Write-Output "Error Downloading and Extracting " $Driver " Package: " $_
-        }
-        #Checks if the driver exists already then calls the installdrivers function if it doesn't
-        $DriverTest = Get-PrinterDriver -Name $Driver
-        If (-not ($DriverTest.Name.Contains($Driver))) 
-        {
-            installdrivers
-        }
-        Else
-        {
-            Write-Output "Printer Driver is already installed, Continuing..."
+                Write-Output "Error Downloading, Extracting, or Installing the " $Driver " Package: " $_
         }
         #Checks if the printer has already been added, then calls the installprinter function if it hasn't
         $PrinterTest = Get-Printer -Name $PrinterName
