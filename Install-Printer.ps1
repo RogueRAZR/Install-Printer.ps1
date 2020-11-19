@@ -1,7 +1,6 @@
 ﻿#Parameters    
     $url = "<Driver File URL>"
     $dlpath = "<File Download Destination and Filename>"
-    $zpath = "<UnZip Output Path> (Optional)"
     $driver = "<Printer DriverStore Name>"
     $driverpath = $zpath + "<Internal Path of extracted driver inf>"
     $printIP = "<Printer IP Address>"
@@ -15,6 +14,8 @@ function printermain {
     {                 
         If (-not (Test-Path $dlpath)) 
         {
+            #Create Directory
+            New-Item -Path $zpath -ItemType Directory
             #Download printer driver (if it hasn't been already)
             Start-BitsTransfer -Source $url -Destination $dlpath
         }
@@ -46,38 +47,43 @@ function printermain {
 }
 
 #Installs the printer driver
-function installdrivers {
-    Try {
+function installdrivers 
+{
+    Try 
+    {
         pnputil /add-driver $driverpath
     }
-    Catch {
+    Catch 
+    {
         Write-Output "Problem adding driver to DriverStore: " $_
     }
 }
 
 #Installs the printer
-function installprinter {
-    Try {
+function installprinter 
+{
+    Try 
+    {
         Add-PrinterPort -Name $printIP -PrinterHostAddress $printIP
         Add-PrinterDriver -Name $driver
         Add-Printer -Name $PrinterName -DriverName $driver -PortName $printIP
     }
-    Catch {
+    Catch 
+    {
         Write-Output "Problem adding the Printer: " $_
     }
 }
 
-#Call main then delete extracted printer files.
-If (($zpath -eq "") -or ($zpath -eq"<UnZip Output Path> (Optional)"))
-{
-    $zpath = $dlpath -replace '\\\w+\.\w+'
-}
+#Modify PrinterName based on parameters
 If (($PrinterName -eq "") -or ($PrinterName -eq "<Printer Dispaly Name (Optional)>"))
 {
     $PrinterName = $driver
 }
+#Set zpath and call main then delete zpath.
+$zpath = $dlpath -replace '\\\w+\.\w+'
 printermain
-If (Test-Path $zpath) {
+If (Test-Path $zpath) 
+{
     Remove-Item $zpath -Recurse
 }
 Exit
