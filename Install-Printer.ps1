@@ -1,12 +1,12 @@
 <#PSScriptInfo
  
-.VERSION 1.1
+.VERSION 1.2
  
 .GUID b7d7c2fc-3fc2-405f-bbd8-62775faf2ce0
  
 .AUTHOR Kyle Mosley
  
-.COMPANYNAME RazerSharp
+.COMPANYNAME
  
 .COPYRIGHT
  
@@ -27,7 +27,7 @@
 .RELEASENOTES
 Version 1.0: Original published version.
 Version 1.1: Modified the Driver Check so that if Driver is already present, there is no need to download.
-
+Version 1.2: Fixed a number of issues with the Driver installation process, including using the incorrect default path for extracting zip.
 #>
 
 <#
@@ -60,10 +60,8 @@ Custom name for the printer to be added (Optional Parameter, if not provided the
 Tells the script to delete the driver files after install. Helpful when running script while attended and you dont need to keep the drivers.
 .PARAMETER ErrorActionPreferance
 Defines what should happen in the case of an error. If script runs unattended (like in InTune), this should be left to SilentlyContinue. If debugging is needed change to Continue or Stop.
-
 .EXAMPLE
 .\Install-Printer.ps1 -url "https://cscsupportftp.mykonicaminolta.com/DownloadFile/Download.ashx?fileversionid=31329&productid=2175" -driver "KONICA MINOLTA C360i PCL Mono" -driverpath "\Driver\Drivers\PCL\EN\Win_x64\KOAXJJ__.inf" -printIP "192.168.10.110"
-
  
 #>
 param
@@ -81,13 +79,18 @@ param
 
 #Main Function (Starts download, starts extraction, calls driver installation, calls printer installation)
     function printermain {
-        $DriverTest = Get-PrinterDriver -Name $Driver    
+        $DriverPath = $ZPath + $DriverZPath
+        $DriverTest = Get-PrinterDriver -Name $Driver
+        $PathTest = Test-Path -Path $ZPath 
         Try 
         {   
-            If ((-not (Test-Path $DlPath)) -and (-not ($DriverTest.Name.Contains($Driver))))
+            If ($DriverTest -eq $null)
             {
-                #Create Directory
-                New-Item -Path $ZPath -ItemType Directory
+                #Create Directory if not exist
+                If ($PathTest -eq $False)
+                {
+                    New-Item -Path $ZPath -ItemType Directory
+                }
                 #Download printer driver (if it hasn't been already)
                 Start-BitsTransfer -Source $url -Destination $DlPath
                 #Extract printer driver
@@ -104,24 +107,14 @@ param
         {
                 Write-Output "Error Downloading, Extracting, or Installing the " $Driver " Package: " $_
         }
-        #Checks if the printer has already been added, then calls the installprinter function if it hasn't
-        $PrinterTest = Get-Printer -Name $PrinterName
-        if (-not ($PrinterTest.Name -eq $PrinterName)) 
-        {
-            installprinter
-        }
-        Else
-        {
-            Write-Output "Printer is already installed, Exiting..."
-            Exit
-        }
+        #Add printer to Devices
+        installprinter
     }
 
     #Installs the printer driver
     function installdrivers {
         Try 
         {
-            $DriverPath = $DlPath + $DriverZPath
             pnputil /add-driver $DriverPath
             Add-PrinterDriver -Name $Driver
         }
@@ -131,16 +124,26 @@ param
         }
     }
 
-    #Installs the printer and sets the port
-    function installprinter {
-        Try 
+    #Installs the printer and sets the port if it doesn't already exist
+    function installprinter 
+    {
+        $PrinterTest = Get-Printer -Name $PrinterName
+        if (-not ($PrinterTest.Name -eq $PrinterName)) 
         {
-            Add-PrinterPort -Name $PrintIP -PrinterHostAddress $PrintIP
-            Add-Printer -Name $PrinterName -DriverName $Driver -PortName $PrintIP
+            Try 
+            {
+                Add-PrinterPort -Name $PrintIP -PrinterHostAddress $PrintIP
+                Add-Printer -Name $PrinterName -DriverName $Driver -PortName $PrintIP
+            }
+            Catch 
+            {
+                Write-Output "Problem adding the Printer: " $_
+            }
         }
-        Catch 
+        Else
         {
-            Write-Output "Problem adding the Printer: " $_
+            Write-Output "Printer is already installed, Exiting..."
+            Exit
         }
     }
 
@@ -157,4 +160,4 @@ param
     {
         Remove-Item $ZPath -Recurse
     }
-    Exit
+Exit
